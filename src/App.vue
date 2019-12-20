@@ -2,10 +2,9 @@
 
 <template>
   <div id="app">
-    <CoverWrap v-if="coverShow" @click="colsePika()"></CoverWrap>
     <Title></Title>
     <v-chart class="map-wrap" :options="option"></v-chart>
-    <DailyIncome :income="income"></DailyIncome>
+    <DailyIncome :income="income" :ordernum="ordernum" :usernum="usernum"></DailyIncome>
     <OrderList :list="testdata"></OrderList>
   </div>
 </template>
@@ -14,26 +13,22 @@
 import DailyIncome from './components/DailyIncome.vue'
 import OrderList from './components/OrderList.vue'
 import Title from './components/Title.vue'
-import CoverWrap from './components/CoverWrap.vue'
 import ECharts from "vue-echarts";
 import "echarts-gl";
 import "echarts/map/js/china.js";
 
 var redata = []
 
-// var locationdata = []
 export default {
   name: "app",
   components: {
 		DailyIncome,
 		OrderList,
 		Title,
-		CoverWrap,
     "v-chart": ECharts
   },
   data() {
     return {
-			coverShow: false,
 			testdata: [],
       option: {
 				// title: {
@@ -53,7 +48,12 @@ export default {
           map: "china",
 					roam: true,
 					show: true,
-					center:[104.114129, 37.550339],
+					zoom: 1.3,
+					scaleLimit: {
+						max: 10,
+						min: 0.002
+					},
+					center:[104.114129, 34.550339],
 					label:{
 						emphasis: {
 							show: true
@@ -87,6 +87,7 @@ export default {
 						symbolSize: function(val) {
               return val[2] / 10;
             },
+						zoom: 5,
             zoomScale: 0.002,
 						blendMode: "lighter",
 						hoverAnimation: true,
@@ -143,17 +144,18 @@ export default {
           textStyle: {
             color: "#fff" // 值域控件的文本颜色
           }
-        }
+				},
+				
 			},
 			id: 0,
 			income: 0, //今日实收
-			maxLength: 5,
-			// websock: null,
+			ordernum: 0, //今日订单数
+			usernum: 0, //今日下单用户
+			maxLength: 200,
     }
 	},
 	created() {
-		// this.$socket.emit("sendMessageToServer");
-		// this.initWebSocket();
+		this.initWebSocket();
 	},
 	destroyed() {
 		this.websock.close() //离开路由之后断开websocket连接
@@ -162,18 +164,17 @@ export default {
 		convertResData (data) {
 			let locationdata = [];
 			for (var i = 0; i < data.length; i++) {
-				data[i].location.push(data[i].payFee)
+				let val = [data[i].location,data[i].payFee].flat();
 				locationdata.push({
 					name: data[i].payFee,
-					value: data[i].location
+					value: val
 				})
 			}
-			// eslint-disable-next-line no-console
-			console.log(locationdata)
 			return locationdata;
 		},
 		initWebSocket() {
 			let randomId = new Date().getTime();
+			// const test_wsuri = "ws://172.16.142.202:8327/as/portal/order/missBuyer/ws?userId=" + randomId;
 			const wsuri = "ws://as-vip-test.missfresh.cn/as/portal/order/missBuyer/ws?userId=" + randomId;
 			this.websock = new WebSocket(wsuri);
 			this.websock.onmessage = this.websocketonmessage;
@@ -192,14 +193,15 @@ export default {
 		websocketonmessage(e){ //数据接收
 			const data = JSON.parse(e.data);
 			// eslint-disable-next-line no-console
-			console.log('onmessage',data);
-			this.income = data.totalPayFee;
-			if (this.testdata.length > this.maxLength) {
+			// console.log('onmessage',data);
+			this.testdata.push(data)
+			if (this.testdata.length > 20) {
 				this.testdata.shift()
 			}
-			this.testdata.push(data)
 			redata = this.testdata
-			
+			this.income = Math.floor(data.totalPayFee);
+			this.ordernum = data.totalPayOrder
+			this.usernum = data.totalPayUser
 			this.option.series[0].data = this.convertResData(this.testdata)
 		},
 		websocketsend(Data){//数据发送
@@ -208,15 +210,16 @@ export default {
 		websocketclose(e){  //关闭
 			// eslint-disable-next-line no-console
 			console.log('断开连接',e);
-		},
-		colsePika() {
-			this.coverShow = false
 		}
 	}
 };
 </script>
 
 <style>
+body {
+	padding: 0;
+	margin: 0;
+}
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

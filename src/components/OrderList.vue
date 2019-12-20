@@ -54,7 +54,7 @@ export default {
 .list-box {
   position: fixed;
 	width: 400px;
-	height: 60vh;
+	height: 620px;
 	overflow: hidden;
 	bottom: 10vh;
 	left: 0;
@@ -63,7 +63,7 @@ export default {
 .list-wrap {
 	background: rgba(15, 89, 164, 0.2);
 	width: 360px;
-	height: 59vh;
+	height: 600px;
 	margin: 0 20px 50px 20px;
 	overflow: hidden;
 	border: 2px solid #2775b6;
@@ -80,6 +80,8 @@ export default {
 	height: 30px;
 	border-bottom: 1px silid #fff;
 	text-align: center;
+	overflow: hidden;
+	white-space: nowrap;
 }
 .price {
 	color: #d2b116;
