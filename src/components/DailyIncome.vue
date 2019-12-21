@@ -54,6 +54,12 @@ export default {
 	},
 	mounted() {
 		this.$nextTick(()=>{
+			// eslint-disable-next-line no-console
+			console.log('income-->',this.income)
+			// eslint-disable-next-line no-console
+			console.log('ordernum-->',this.ordernum)
+			// eslint-disable-next-line no-console
+			console.log('usernum-->',this.usernum)
 			this.increaseNumber();
 		})
 	},

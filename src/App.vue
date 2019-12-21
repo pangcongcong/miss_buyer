@@ -151,7 +151,7 @@ export default {
 			income: 0, //今日实收
 			ordernum: 0, //今日订单数
 			usernum: 0, //今日下单用户
-			maxLength: 200,
+			maxLength: 300,
     }
 	},
 	created() {

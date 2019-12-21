@@ -1,7 +1,8 @@
 <template>
 	<div class="list-box">
 		<div class="list-wrap">
-			<transition-group name="list" mode="out-in">
+			<transition-group name="
+			" mode="out-in">
 				<div
 					v-for="(item,index) in list"
 					:key="index" class="lis-ul"
