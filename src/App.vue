@@ -2,214 +2,59 @@
 
 <template>
   <div id="app">
-    <Title></Title>
-    <v-chart class="map-wrap" :options="option"></v-chart>
-    <DailyIncome :income="income" :ordernum="ordernum" :usernum="usernum"></DailyIncome>
-    <OrderList :list="testdata"></OrderList>
+		<Content :text="text" :score="score" @clearClick="clearClick"></Content>
+		<Button @btnClick="btnClick" @rightClick="rightClick"></Button>
   </div>
 </template>
 
 <script>
-import DailyIncome from './components/DailyIncome.vue'
-import OrderList from './components/OrderList.vue'
-import Title from './components/Title.vue'
-import ECharts from "vue-echarts";
-import "echarts-gl";
-import "echarts/map/js/china.js";
+import Button from './components/Button.vue'
+import Content from './components/Content.vue'
+import arr from './utils/constence.js'
 
-var redata = []
 
 export default {
   name: "app",
   components: {
-		DailyIncome,
-		OrderList,
-		Title,
-    "v-chart": ECharts
+		Button,
+		Content
   },
   data() {
     return {
-			testdata: [],
-      option: {
-				// title: {
-				// 	text: 'miss_buyer',
-				// 	subtext: 'data from missfresh',
-				// 	sublink: 'http://www.missfresh.cn',
-				// 	left: 'center',
-				// 	textStyle: {
-				// 		color: '#fff'
-				// 	}
-				// },
-				tooltip : {
-					trigger: 'item',
-				},
-        geo: {
-					type: 'map',
-          map: "china",
-					roam: true,
-					show: true,
-					zoom: 1.3,
-					scaleLimit: {
-						max: 10,
-						min: 0.002
-					},
-					center:[104.114129, 34.550339],
-					label:{
-						emphasis: {
-							show: true
-						}
-					},
-          itemStyle: {
-            normal: {
-              // 普通状态下的样式
-              areaColor: "#004981",
-							borderColor: "#029fd4",
-							borderWidth: 1,
-							shadowBlur: {
-								shadowColor: 'rgba(0, 0, 0, 0.5)',
-								shadowBlur: 10
-							}
-            },
-            emphasis: {
-              // 高亮状态下的样式
-              areaColor: "#029fd4"
-						}
-					}
-        },
-				backgroundColor: "#044161",
-        series: [
-          {
-            name: "buyer", // series名称
-            type: "effectScatter", // series图表类型
-            progressive: 1e6,
-            coordinateSystem: "geo", // series坐标系类型
-						// symbolSize: 1,
-						symbolSize: function(val) {
-              return val[2] / 10;
-            },
-						zoom: 5,
-            zoomScale: 0.002,
-						blendMode: "lighter",
-						hoverAnimation: true,
-						label: {
-							normal: {
-								formatter: '{b}',
-								position: 'right',
-								show: false
-							},
-							emphasis: {
-								show: true
-							}
-            },
-            large: true,
-            tooltip: {
-              show: true
-						},
-            showEffectOn: "render",
-            rippleEffect: {
-              brushType: "stroke"
-            },
-            itemStyle: {
-              color: "rgb(20, 15, 2)"
-						},
-						
-						shadowBlur: 10,
-						shadowColor: "#333",
-            postEffect: {
-              enable: true
-            },
-            silent: true,
-            dimensions: ["lng", "lat"],
-            data: this.convertResData(redata) //后端返回的数据
-          }
-				],
-				legend: {
-					orient: 'vertical',
-					top: 'bottom',
-					left: 'right',
-					data:['buyer'],
-					textStyle: {
-						color: '#fff'
-					}
-				},
-        visualMap: { 
-          // type: "continuous", //连续型
-          min: 0,
-					max: 500,
-					splitNumber: 5,
-          // calculable: true, // 是否启用值域漫游
-          inRange: {
-            color: ['#d94e5d','#eac736','#50a3ba']
-          },
-          textStyle: {
-            color: "#fff" // 值域控件的文本颜色
-          }
-				},
-				
-			},
-			id: 0,
-			income: 0, //今日实收
-			ordernum: 0, //今日订单数
-			usernum: 0, //今日下单用户
-			maxLength: 300,
+			text: '',
+			score: 0
     }
 	},
 	created() {
-		this.initWebSocket();
-	},
-	destroyed() {
-		this.websock.close() //离开路由之后断开websocket连接
+		this.text = this.getText()
 	},
 	methods: {
-		convertResData (data) {
-			let locationdata = [];
-			for (var i = 0; i < data.length; i++) {
-				let val = [data[i].location,data[i].payFee].flat();
-				locationdata.push({
-					name: data[i].payFee,
-					value: val
-				})
-			}
-			return locationdata;
+		clearClick() {
+			this.score = 0
 		},
-		initWebSocket() {
-			let randomId = new Date().getTime();
-			// const test_wsuri = "ws://172.16.142.202:8327/as/portal/order/missBuyer/ws?userId=" + randomId;
-			const wsuri = "ws://as-vip-test.missfresh.cn/as/portal/order/missBuyer/ws?userId=" + randomId;
-			this.websock = new WebSocket(wsuri);
-			this.websock.onmessage = this.websocketonmessage;
-			this.websock.onopen = this.websocketonopen;
-			this.websock.onerror = this.websocketonerror;
-			this.websock.onclose = this.websocketclose;
-		},
-		websocketonopen(){ //连接建立之后执行send方法发送数据
-			var randomId = new Date().getTime();
-			let actions = {"userId":randomId};
-			this.websocketsend(JSON.stringify(actions));
-		},
-		websocketonerror(){//连接建立失败重连
-			this.initWebSocket();
-		},
-		websocketonmessage(e){ //数据接收
-			const data = JSON.parse(e.data);
+		btnClick() {
+			this.text = this.getText()
 			// eslint-disable-next-line no-console
-			// console.log('onmessage',data);
-			this.testdata.push(data)
-			if (this.testdata.length > 20) {
-				this.testdata.shift()
-			}
-			redata = this.testdata
-			this.income = Math.floor(data.totalPayFee);
-			this.ordernum = data.totalPayOrder
-			this.usernum = data.totalPayUser
-			this.option.series[0].data = this.convertResData(this.testdata)
+			console.log(this.text)
 		},
-		websocketsend(Data){//数据发送
-			this.websock.send(Data);
+		rightClick() {
+			++this.score
+			this.text = this.getText()
 		},
-		websocketclose(e){  //关闭
+		getText() {
+			let tmpArr = arr
+			let index
+			let text
+
+			do{
+				index = Math.floor(Math.random()*tmpArr.length);
+				text = tmpArr[index]
+			} while(tmpArr[index]==null);
 			// eslint-disable-next-line no-console
-			console.log('断开连接',e);
+			console.log('tmpArr-->',tmpArr)
+			tmpArr[index]=null;
+
+			return text
 		}
 	}
 };

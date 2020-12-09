@@ -9,7 +9,7 @@
 					<h1 data-heading="MISS">MISS</h1>
 				</div>
 				<div class="wrapper2">
-					<h1 data-heading="BUYER">BUYER</h1>
+					<h1 data-heading="FRESH">FRESH</h1>
 				</div>
 			</div>
 		</div>
