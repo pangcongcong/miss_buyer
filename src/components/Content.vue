@@ -4,6 +4,13 @@
 			<div>成绩：{{score}}</div>
 			<div class="clear" @click="clearClick">clear</div>
 		</div>
+		<div class="score time">
+			<div>倒计时：{{time}}</div>
+			<div class="handle-box">
+				<div class="clear" @click="startClick">start</div>
+				<div class="clear" @click="resetClick">reset</div>
+			</div>
+		</div>
 		{{text}}
 	</div>
 </template>
@@ -13,7 +20,8 @@
 export default {
   props: {
 		text: String,
-		score: Number
+		score: Number,
+		time: Number,
 	},
 	data() {
 		return {
@@ -24,9 +32,13 @@ export default {
 	},
 	methods: {
 		clearClick(){
-		// eslint-disable-next-line no-console
-		console.log('score',this.score)
 			this.$emit('clearClick')
+		},
+		resetClick() {
+			this.$emit('resetClick')
+		},
+		startClick() {
+			this.$emit('startClick')
 		}
 	}
 }
@@ -53,13 +65,24 @@ export default {
 	top: 50px;
 	left: 50px;
 	color: #FF4891;
-	font-size: 48px;
-	font-weight: 500;
+	font-size: 64px;
+	font-weight: 900;
 	text-align: left;
 }
 .clear {
 	font-size: 24px;
 	color: #d3cfcc;
 	text-decoration: underline;
+}
+.time {
+	right: 50px;
+	text-align: right;
+}
+.handle-box {
+	position: fixed;
+	right: 50px;
+	width: 200px;
+	display: flex;
+	justify-content: space-between;
 }
 </style>

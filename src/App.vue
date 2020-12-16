@@ -2,7 +2,7 @@
 
 <template>
   <div id="app">
-		<Content :text="text" :score="score" @clearClick="clearClick"></Content>
+		<Content :text="text" :score="score" :time="time" @clearClick="clearClick" @resetClick="resetClick" @startClick="startClick"></Content>
 		<Button @btnClick="btnClick" @rightClick="rightClick"></Button>
   </div>
 </template>
@@ -11,6 +11,8 @@
 import Button from './components/Button.vue'
 import Content from './components/Content.vue'
 import arr from './utils/constence.js'
+const countDown = 120
+let timerId = null
 
 
 export default {
@@ -22,13 +24,27 @@ export default {
   data() {
     return {
 			text: '',
-			score: 0
+			score: 0,
+			time: countDown,
     }
 	},
 	created() {
 		this.text = this.getText()
 	},
 	methods: {
+		startClick() {
+			timerId && clearInterval(timerId)
+			timerId = setInterval(() => {
+				this.time -= 1
+				if (this.time <= 0) {
+					this.time = 0
+					return false
+				}
+			}, 1000);
+		},
+		resetClick() {
+			this.time = countDown
+		},
 		clearClick() {
 			this.score = 0
 		},
